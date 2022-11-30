@@ -39,7 +39,7 @@ def init():
     arrays = [P for _ in range(m)]
     Pc = np.stack(arrays, axis=0).reshape(m * t)
 
-    c = np.concatenate((-Rc, Sc - Pc, -D))
+    c = np.concatenate((-Rc, Sc - Pc, -C0 * D))
     I_nm = np.identity(n * m, dtype="float")
     I_mt = np.identity(m * t, dtype="float")
 
