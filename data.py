@@ -4,7 +4,7 @@ from numpy import random
 
 def generate(n, m, t):  # n milkmen, m factories, t items
     L = random.randint(200, 5000, size=(n))  # amount in litre
-    R = random.randint(30, 50, size=(n))  # cost per litre in INR
+    R = random.randint(40, 41, size=(n))  # cost per litre in INR
     D = random.randint(
         10, 500, size=(n * m)
     )  # distance in kilometre, colunm of n columns of size m
@@ -20,14 +20,18 @@ def generate(n, m, t):  # n milkmen, m factories, t items
     return L, R, D, Q, A, P, S, M, C0, l0
 
 
-def init():
+def slackify(A, b, c):
+    A = np.hstack((A, np.identity(A.shape[0])))
+    c = np.append(c, np.zeros(A.shape[0]))
+    return A,b,c
+
+
+def init(n, m, t):
     # maximisation problem
     # max cTx
     # sub to. ax <= b
     # x>=0
-    n = 3
-    m = 4
-    t = 5
+
     L, R, D, Q, A, P, S, M, C0, l0 = generate(n, m, t)
 
     arrays = [R for _ in range(m)]
@@ -45,6 +49,7 @@ def init():
 
     a = np.empty((0, n * m + m * t + n * m))
     b = np.empty((0,))
+    
     # 3.1
     a1 = np.hstack(((-1 / l0) * I_nm, np.zeros((n * m, m * t)), I_nm))
     a = np.vstack((a, a1))
@@ -83,8 +88,22 @@ def init():
     arrays = [A[i] * np.identity(m) for i in range(t)]
     new_arr1 = np.stack(arrays, axis=0).swapaxes(0, 2).reshape(m, t * m)
 
-    a1 = np.hstack((-new_arr, new_arr1, np.zeros((m, m * n))))
+    a1 = np.hstack((new_arr, new_arr1, np.zeros((m, m * n))))
     a = np.vstack((a, a1))
     b = np.append(b, np.zeros((m)))
 
-    return a, b, c
+    # size check
+    assert(a.shape == (b.size, c.size))
+
+    return slackify(a, b, c)
+
+def unflatten(sol, n, m, t):
+    flat_x = sol[: n * m]
+    flat_y = sol[n * m : n * m + m * t]
+    flat_z = sol[n * m + m * t : 2 * n * m + m * t]
+
+    x = flat_x.reshape(n, m)
+    y = flat_y.reshape(m, t)
+    z = flat_z.reshape(n, m)
+
+    return x, y, z
