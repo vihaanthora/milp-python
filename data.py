@@ -117,7 +117,7 @@ def unflatten(sol, n, m, t):
     return x, y, z
 
 
-def export_constraints( n, m, t, L, R, D, Q, A, P, S, M, C0, l0 , filename):
+def export_constraints(n, m, t, L, R, D, Q, A, P, S, M, C0, l0, filename):
     # L, R, D, Q, A, P, S, M, C0, l0 = generate(n, m, t)
     obj = {
         "n": n,
@@ -144,4 +144,18 @@ def import_constraints(filename):
         json_data = infile.read()
     return json.loads(json_data, cls=DecodeToNumpy)
 
-# export_constraints(3,10,5, "dump.json")
+
+def process(Z, D):
+    d_m = D.max() / np.sqrt(2)
+    return np.array(
+        [
+            [np.floor(z) if d > d_m else np.ceil(z) for z, d in zip(z_row, d_row)]
+            for z_row, d_row in zip(Z, D)
+        ]
+    )
+    # for i in range(m):
+    #     for j in range(n):
+    #         if D[i][j] > max(D) / np.sqrt(2):
+    #             Z[i][j] = np.floor(Z[i][j])
+    #     else:
+    #         Z[i][j] = np.ceil(Z[i][j])
