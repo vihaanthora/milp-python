@@ -1,29 +1,25 @@
 from simplex import Simplex
-from data import init, unflatten
-from simplex1 import LinearModel
+from data import init, unflatten, import_constraints
+from tableu_simplex import LinearModel
+from operator import itemgetter
 import numpy as np
 
-n, m, t = 3, 3, 3
-A, b, c = init(n, m, t)
+consts = import_constraints("dump.json")
+n, m, t = itemgetter("n", "m", "t")(consts)
+A, b, c = init(**consts)
 
-print("A =\n", A, "\n")
-print("b =\n", b, "\n")
-print("c =\n", c, "\n\n")
+model1 = Simplex(A, b, -c)
+solution1, itermap1 = model1.run()
+# X, Y, Z = unflatten(solution1, n, m, t)
+print(f"Simplex1 {np.dot(solution1, c)}")
+# print(f"X is \n {X}\n Y is \n {Y}\n Z is \n {Z}")
+# print("Iterations:", itermap1)
 
-solution = Simplex(A, b, -c).run()
-print(f"Simplex {np.dot(solution, c)}")
-X, Y, Z = unflatten(solution, n, m, t)
-print(f"X is \n {X}\n Y is \n {Y}\n Z is \n {Z}")
+# -----------------------------------------------------
 
-#-----------------------------------------------------
-
-model1 = LinearModel()
-
-model1.addA(A)
-model1.addB(b)
-model1.addC(c)
-
-solution = model1.optimize()
-print(f"Simplex1 {np.dot(solution, c)}")
-X, Y, Z = unflatten(solution, n, m, t)
-print(f"X is \n {X}\n Y is \n {Y}\n Z is \n {Z}")
+model2 = LinearModel(A=A, b=b, c=c, minmax="MAX")
+solution2, itermap2 = model2.optimize()
+# X, Y, Z = unflatten(solution2, n, m, t)
+print(f"Simplex2 {np.dot(solution2, c)}")
+# print(f"X is \n {X}\n Y is \n {Y}\n Z is \n {Z}")
+# print("Iterations:", itermap2)

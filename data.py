@@ -1,7 +1,7 @@
-import math
-
+import json
 import numpy as np
 from numpy import random
+from json2np import DecodeToNumpy, EncodeFromNumpy
 
 
 def generate(n, m, t):  # n milkmen, m factories, t items
@@ -12,14 +12,15 @@ def generate(n, m, t):  # n milkmen, m factories, t items
     D = np.zeros((n, m))  # distance in kilometre, colunm of n columns of size m
     for i in range(n):
         for j in range(m):
-            D[i][j] = math.dist(milkmen[i], factories[j])
-    D = D.reshape(n * m)
+            D[i][j] = np.linalg.norm(milkmen[i] - factories[j])
     Q = random.randint(
         100, 10000, size=(m * t)
     )  # quantity of items, column m columns of size t
-    A = random.uniform(0.1, 10, size=(t))  # amount per item in litre
+    A = random.uniform(1, 10, size=(t))  # amount per item in litre
     P = random.randint(1, 10, size=(t))  # production cost per item in INR
-    S = random.randint(5, 500, size=(t))  # selling price per item in INR
+    rng = np.random.default_rng()
+    S = rng.integers(P + A * max(R), 500)  # selling price per item in INR
+    # S = random.randint(5, 500, size=(t))
     M = random.randint(1000, 50000, size=(t))  # minimum quantity per item
     C0 = 200
     l0 = 500
@@ -32,13 +33,13 @@ def slackify(A, b, c):
     return A, b, c
 
 
-def init(n, m, t):
-    # maximisation problem
-    # max cTx
-    # sub to. ax <= b
-    # x>=0
-
-    L, R, D, Q, A, P, S, M, C0, l0 = generate(n, m, t)
+def init(n, m, t, L, R, D, Q, A, P, S, M, C0, l0):
+    """
+    maximisation problem
+    max cTx
+    sub. to ax <= b
+    x>=0
+    """
 
     arrays = [R for _ in range(m)]
     Rc = np.stack(arrays, axis=1).reshape(n * m)
@@ -49,7 +50,7 @@ def init(n, m, t):
     arrays = [P for _ in range(m)]
     Pc = np.stack(arrays, axis=0).reshape(m * t)
 
-    c = np.concatenate((-Rc, Sc - Pc, -C0 * D))
+    c = np.concatenate((-Rc, Sc - Pc, -C0 * D.reshape(n * m)))
     I_nm = np.identity(n * m, dtype="float")
     I_mt = np.identity(m * t, dtype="float")
 
@@ -114,3 +115,33 @@ def unflatten(sol, n, m, t):
     z = flat_z.reshape(n, m)
 
     return x, y, z
+
+
+def export_constraints( n, m, t, L, R, D, Q, A, P, S, M, C0, l0 , filename):
+    # L, R, D, Q, A, P, S, M, C0, l0 = generate(n, m, t)
+    obj = {
+        "n": n,
+        "m": m,
+        "t": t,
+        "L": L,
+        "D": D,
+        "R": R,
+        "Q": Q,
+        "A": A,
+        "P": P,
+        "S": S,
+        "M": M,
+        "C0": C0,
+        "l0": l0,
+    }
+
+    with open(filename, "w") as outfile:
+        json.dump(obj, outfile, cls=EncodeFromNumpy)
+
+
+def import_constraints(filename):
+    with open(filename, "r") as infile:
+        json_data = infile.read()
+    return json.loads(json_data, cls=DecodeToNumpy)
+
+# export_constraints(3,10,5, "dump.json")

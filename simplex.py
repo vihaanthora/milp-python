@@ -4,7 +4,7 @@ Using decomposition of inverse as products of elementary matrices.
 
 Author: Carlo Cena
 """
-from typing import List
+from numpy.typing import ArrayLike
 import numpy as np
 import copy
 import logging
@@ -17,22 +17,16 @@ class Simplex:
     Class which implements the revised simplex algorithm.
     """
 
-    def __init__(self, a: List[List[float]], b: List[float], c: List[float]):
+    def __init__(self, a: ArrayLike, b: ArrayLike, c: ArrayLike):
         """
         Given m, number of constraints, and then n, number of variables:
         :param a: mxn matrix of constraints.
         :param b: nx1 vector for constraints.
         :param c: nx1 vector, cost associated to each variable.
         """
-        # if not isinstance(a, List) or not isinstance(b, List) or not isinstance(c, List):
-        # logging.error("Check inputs' type.")
-        # raise TypeError
-        # self.A = np.array(a, dtype=np.float64)
-        # self.b = np.array(b, dtype=np.float64)
-        # self.c = np.array(c, dtype=np.float64)
-        self.A = a
-        self.b = b
-        self.c = c
+        self.A = np.array(a, dtype=np.float64)
+        self.b = np.array(b, dtype=np.float64)
+        self.c = np.array(c, dtype=np.float64)
 
     def run(self):
         """
@@ -42,6 +36,7 @@ class Simplex:
         changes_buff_e = []
         xb = self.b
         cont = 0
+        itermap = {0: np.dot(xb, cb)}
         while cont < MAX_ITER:
             w = copy.deepcopy(cb)
             for g, r in changes_buff_e:  # Back transformation process
@@ -88,8 +83,9 @@ class Simplex:
             xb = a + xb[changes_buff_e[0][1]] * changes_buff_e[0][0]  # Update solution
 
             cont += 1
+            itermap[cont] = np.dot(xb,cb)
 
-        return self.__create_sol__(xb, indexes_b)
+        return self.__create_sol__(xb, indexes_b), itermap
 
     def __create_sol__(self, xb, indexes_b):
         """
