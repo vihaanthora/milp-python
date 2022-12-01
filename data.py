@@ -5,9 +5,8 @@ from numpy import random
 
 
 def generate(n, m, t):  # n milkmen, m factories, t items
-    random.seed()
-    L = random.randint(200, 5000, size=(n))  # amount in litre
-    R = random.randint(40, 41, size=(n))  # cost per litre in INR
+    L = random.randint(500, 1000, size=(n))  # amount in litre
+    R = random.randint(40, 45, size=(n))  # cost per litre in INR
     milkmen = random.randint(0, 200, size=(n, 2))  # coordinates of milkmen
     factories = random.randint(0, 200, size=(m, 2))  # coordinates of factories
     D = np.zeros((n, m))  # distance in kilometre, colunm of n columns of size m
@@ -50,7 +49,7 @@ def init(n, m, t):
     arrays = [P for _ in range(m)]
     Pc = np.stack(arrays, axis=0).reshape(m * t)
 
-    c = np.concatenate((Rc, Pc - Sc, C0 * D))
+    c = np.concatenate((-Rc, Sc - Pc, -C0 * D))
     I_nm = np.identity(n * m, dtype="float")
     I_mt = np.identity(m * t, dtype="float")
 
