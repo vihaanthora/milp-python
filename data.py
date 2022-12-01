@@ -1,13 +1,20 @@
+import math
+
 import numpy as np
 from numpy import random
 
 
 def generate(n, m, t):  # n milkmen, m factories, t items
+    random.seed()
     L = random.randint(200, 5000, size=(n))  # amount in litre
     R = random.randint(40, 41, size=(n))  # cost per litre in INR
-    D = random.randint(
-        10, 500, size=(n * m)
-    )  # distance in kilometre, colunm of n columns of size m
+    milkmen = random.randint(0, 200, size=(n, 2))  # coordinates of milkmen
+    factories = random.randint(0, 200, size=(m, 2))  # coordinates of factories
+    D = np.zeros((n, m))  # distance in kilometre, colunm of n columns of size m
+    for i in range(n):
+        for j in range(m):
+            D[i][j] = math.dist(milkmen[i], factories[j])
+    D = D.reshape(n * m)
     Q = random.randint(
         100, 10000, size=(m * t)
     )  # quantity of items, column m columns of size t
@@ -23,7 +30,7 @@ def generate(n, m, t):  # n milkmen, m factories, t items
 def slackify(A, b, c):
     A = np.hstack((A, np.identity(A.shape[0])))
     c = np.append(c, np.zeros(A.shape[0]))
-    return A,b,c
+    return A, b, c
 
 
 def init(n, m, t):
@@ -43,13 +50,13 @@ def init(n, m, t):
     arrays = [P for _ in range(m)]
     Pc = np.stack(arrays, axis=0).reshape(m * t)
 
-    c = np.concatenate((-Rc, Sc - Pc, -C0 * D))
+    c = np.concatenate((Rc, Pc - Sc, C0 * D))
     I_nm = np.identity(n * m, dtype="float")
     I_mt = np.identity(m * t, dtype="float")
 
     a = np.empty((0, n * m + m * t + n * m))
     b = np.empty((0,))
-    
+
     # 3.1
     a1 = np.hstack(((-1 / l0) * I_nm, np.zeros((n * m, m * t)), I_nm))
     a = np.vstack((a, a1))
@@ -79,7 +86,7 @@ def init(n, m, t):
 
     a1 = np.hstack((np.zeros((t, m * n)), new_arr, np.zeros((t, m * n))))
     a = np.vstack((a, a1))
-    b = np.append(b, M)
+    b = np.append(b, -M)
 
     # 7
     arrays = [np.identity(m) for _ in range(n)]
@@ -93,9 +100,10 @@ def init(n, m, t):
     b = np.append(b, np.zeros((m)))
 
     # size check
-    assert(a.shape == (b.size, c.size))
+    assert a.shape == (b.size, c.size)
 
     return slackify(a, b, c)
+
 
 def unflatten(sol, n, m, t):
     flat_x = sol[: n * m]

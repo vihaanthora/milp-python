@@ -25,8 +25,8 @@ class Simplex:
         :param c: nx1 vector, cost associated to each variable.
         """
         # if not isinstance(a, List) or not isinstance(b, List) or not isinstance(c, List):
-            # logging.error("Check inputs' type.")
-            # raise TypeError
+        # logging.error("Check inputs' type.")
+        # raise TypeError
         # self.A = np.array(a, dtype=np.float64)
         # self.b = np.array(b, dtype=np.float64)
         # self.c = np.array(c, dtype=np.float64)
@@ -54,7 +54,7 @@ class Simplex:
             k = int(np.argmin(rc))
             y = copy.deepcopy(self.A[:, indexes_n[k]])
             for i in range(len(changes_buff_e)):  # Forward transformation process
-                index_e = len(changes_buff_e)-1-i
+                index_e = len(changes_buff_e) - 1 - i
                 a = copy.deepcopy(y)
                 a[changes_buff_e[index_e][1]] = 0
                 y = a + y[changes_buff_e[index_e][1]] * changes_buff_e[index_e][0]
@@ -66,13 +66,13 @@ class Simplex:
             r = -1
             for i in range(len(xb)):  # Choosing new column
                 if y[i] > 0:
-                    tmp_value = xb[i]/y[i]
+                    tmp_value = xb[i] / y[i]
                     if tmp_value < min_tmp:
                         min_tmp = tmp_value
                         r = i
 
-            new_column = -y/y[r]
-            new_column[r] = 1/y[r]
+            new_column = -y / y[r]
+            new_column[r] = 1 / y[r]
             changes_buff_e.insert(0, (new_column, r))  # Updating "inverse"
 
             matrix_n[:, k] = copy.deepcopy(self.A[:, indexes_b[r]])
@@ -108,13 +108,13 @@ class Simplex:
         """
         Finds a basis B for matrix A and returns matrix N and vectors cb, cn and dictionary of indexesB taken.
         """
-        matrix_n = copy.deepcopy(self.A[:, :-len(self.A)])
-        cb = copy.deepcopy(self.c[-len(self.A):])
-        cn = copy.deepcopy(self.c[:-len(self.A)])
+        matrix_n = copy.deepcopy(self.A[:, : -len(self.A)])
+        cb = copy.deepcopy(self.c[-len(self.A) :])
+        cn = copy.deepcopy(self.c[: -len(self.A)])
         indexes_b = dict()
         indexes_n = dict()
         for i in range(len(self.A)):
             indexes_b[i] = len(self.A[0]) - len(self.A) + i
-        for i in range(len(self.A[0])-len(self.A)):
+        for i in range(len(self.A[0]) - len(self.A)):
             indexes_n[i] = i
         return matrix_n, cb, cn, indexes_b, indexes_n
