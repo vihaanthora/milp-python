@@ -36,7 +36,7 @@ class Simplex:
         changes_buff_e = []
         xb = self.b
         cont = 0
-        itermap = {0: np.dot(xb, cb)}
+        itermap = {0: -np.dot(xb, cb)}
         while cont < MAX_ITER:
             w = copy.deepcopy(cb)
             for g, r in changes_buff_e:  # Back transformation process
@@ -83,7 +83,7 @@ class Simplex:
             xb = a + xb[changes_buff_e[0][1]] * changes_buff_e[0][0]  # Update solution
 
             cont += 1
-            itermap[cont] = np.dot(xb,cb)
+            itermap[cont] = -np.dot(xb,cb)
 
         return self.__create_sol__(xb, indexes_b), itermap
 

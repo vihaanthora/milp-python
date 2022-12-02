@@ -139,7 +139,7 @@ def export_constraints(filename, n, m, t, L, R, D, Q, A, P, S, M, C0, l0):
         json.dump(obj, outfile, cls=EncodeFromNumpy)
 
 
-def export_results(filename, X, Y, Z, iterations, objf, mt_no):
+def export_results(filename, X, Y, Z, iterations, objf, mt_no, time):
     method_name = "matrix simplex method" if mt_no == 1 else "tableu simplex method"
     obj = {
         "objf": objf,
@@ -147,7 +147,8 @@ def export_results(filename, X, Y, Z, iterations, objf, mt_no):
         "Y": Y,
         "Z": Z,
         "iterations": iterations,
-        "method_name": method_name
+        "method_name": method_name, 
+        "time" : time,
     }
 
     with open(filename, "w") as outfile:

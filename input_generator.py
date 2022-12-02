@@ -1,23 +1,23 @@
+import argparse
 from data import *
-from simplex import Simplex
 
-INFILE_PATH = "data/inp4.json"
-n, m, t = 100, 20, 25
-LIMIT = 50000
-profit = 0
-iter = 0
-allPos = False
+parser = argparse.ArgumentParser(prog="MILP Python", description="Solve MILPs")
+parser.add_argument("-n", metavar="n", dest="n", type=int, required=True)
+parser.add_argument("-m", metavar="m", dest="m", type=int, required=True)
+parser.add_argument("-t", metavar="t", dest="t", type=int, required=True)
+parser.add_argument(
+    "-o",
+    metavar="output",
+    dest="output",
+    type=str,
+    default="data/out.json",
+    help="Output file path",
+)
 
-while profit < LIMIT and not allPos:
-    consts = generate(n, m, t)
-    A, b, c = LP_form(n, m, t, *consts)
-    model1 = Simplex(A, b, -c)
-    solution1, itermap1 = model1.run()
-    allPos = (solution1 >= 0).all()
-    profit = np.dot(solution1, c)
-    iter += 1
-    if iter % 100 == 0:
-        print("Iteration:", iter)
+args = parser.parse_args()
 
-print(iter)
-export_constraints(INFILE_PATH, n, m, t, *consts)
+OUTFILE_PATH = args.output
+n, m, t = args.n, args.m, args.t
+consts = generate(n, m, t)
+
+export_constraints(OUTFILE_PATH, n, m, t, *consts)

@@ -47,7 +47,7 @@ class LinearModel:
 
         # keep track of iterations for display
         iter = 1
-        # itermap = {0:np.dot(self.x,self.c)}
+        itermap = {0:-tableau[0,1]}
 
         while True:
 
@@ -100,7 +100,7 @@ class LinearModel:
             # new basic variable
             tableau[r, 0] = n - 2
 
-            # itermap[iter] = np.dot(self.x,self.c)
+            itermap[iter] = -tableau[0,1]
             iter += 1
 
         self.x = np.array([0] * len(self.c), dtype=float)
@@ -111,4 +111,4 @@ class LinearModel:
 
         self.optimalValue = -1 * tableau[0, 1]
 
-        return self.x, iter
+        return self.x, itermap
