@@ -33,7 +33,7 @@ def slackify(A, b, c):
     return A, b, c
 
 
-def init(n, m, t, L, R, D, Q, A, P, S, M, C0, l0):
+def LP_form(n, m, t, L, R, D, Q, A, P, S, M, C0, l0):
     """
     maximisation problem
     max cTx
@@ -117,7 +117,7 @@ def unflatten(sol, n, m, t):
     return x, y, z
 
 
-def export_constraints(n, m, t, L, R, D, Q, A, P, S, M, C0, l0, filename):
+def export_constraints(filename, n, m, t, L, R, D, Q, A, P, S, M, C0, l0):
     # L, R, D, Q, A, P, S, M, C0, l0 = generate(n, m, t)
     obj = {
         "n": n,
@@ -139,23 +139,42 @@ def export_constraints(n, m, t, L, R, D, Q, A, P, S, M, C0, l0, filename):
         json.dump(obj, outfile, cls=EncodeFromNumpy)
 
 
+def export_results(filename, X, Y, Z, iterations, objf, mt_no):
+    method_name = "matrix simplex method" if mt_no == 1 else "tableu simplex method"
+    obj = {
+        "objf": objf,
+        "X": X,
+        "Y": Y,
+        "Z": Z,
+        "iterations": iterations,
+        "method_name": method_name
+    }
+
+    with open(filename, "w") as outfile:
+        json.dump(obj, outfile, cls=EncodeFromNumpy)
+
+
 def import_constraints(filename):
     with open(filename, "r") as infile:
         json_data = infile.read()
     return json.loads(json_data, cls=DecodeToNumpy)
 
 
-def process(Z, D):
+def processZ(sol, D, n, m, t):
+    D = D.flatten()
     d_m = D.max() / np.sqrt(2)
-    return np.array(
-        [
-            [np.floor(z) if d > d_m else np.ceil(z) for z, d in zip(z_row, d_row)]
-            for z_row, d_row in zip(Z, D)
-        ]
+    l, r = n * m + m * t, 2 * n * m + m * t
+
+    np.put(
+        sol,
+        range(l, r),
+        np.array(
+            [np.floor(z) if d > d_m else np.ceil(z) for z, d in zip(sol[l:r], D)]
+        ),
     )
-    # for i in range(m):
-    #     for j in range(n):
-    #         if D[i][j] > max(D) / np.sqrt(2):
-    #             Z[i][j] = np.floor(Z[i][j])
-    #     else:
-    #         Z[i][j] = np.ceil(Z[i][j])
+
+    return sol
+
+
+def calc_obj(sol, c):
+    return np.dot(c, sol)

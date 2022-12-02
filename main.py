@@ -1,35 +1,28 @@
-import numpy as np
-from simplex import Simplex
 from operator import itemgetter
-from tableu_simplex import LinearModel
-from timeit import default_timer as timer
-from data import init, unflatten, import_constraints
+from data import (
+    LP_form,
+    unflatten,
+    import_constraints,
+    export_results,
+    processZ,
+    calc_obj,
+)
+from wrapper import solve
 
-consts = import_constraints("dump.json")
-n, m, t = itemgetter("n", "m", "t")(consts)
-A, b, c = init(**consts)
+INFILE_PATH = "data/inp4.json"
+OUTFILE_PATH = "data/out4.json"
 
-model1 = Simplex(A, b, -c)
+consts = import_constraints(INFILE_PATH)
+A, b, c = LP_form(**consts)
 
-start = timer()
-solution1, itermap1 = model1.run()
-time1 = timer()-start
+solution, itermap, time = solve(A, b, c, method=1)
 
-# X, Y, Z = unflatten(solution1, n, m, t)
-print(f"Simplex1 {np.dot(solution1, c)}")
-# print(f"X is \n {X}\n Y is \n {Y}\n Z is \n {Z}")
-# print("Iterations:", itermap1)
-print(time1)
+n, m, t, D = itemgetter("n", "m", "t", "D")(consts)
+solution = processZ(solution, D, n, m, t)
+X, Y, Z = unflatten(solution, n, m, t)
+objf = calc_obj(solution, c)
+iter = max(itermap.keys())
 
-# -----------------------------------------------------
 
-model2 = LinearModel(A=A, b=b, c=c, minmax="MAX")
-start = timer()
-solution2, itermap2 = model2.optimize()
-time2 = timer() - start
 
-# X, Y, Z = unflatten(solution2, n, m, t)
-print(f"Simplex2 {np.dot(solution2, c)}")
-# print(f"X is \n {X}\n Y is \n {Y}\n Z is \n {Z}")
-# print("Iterations:", itermap2)
-print(time2)
+export_results(OUTFILE_PATH, X, Y, Z, iter, objf, 1)

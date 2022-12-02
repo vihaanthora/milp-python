@@ -1,4 +1,4 @@
-# milp-python
+# MILP python
 Python code to solve MILP problems
 
 ### things to do in code:
@@ -7,6 +7,7 @@ Python code to solve MILP problems
 - [x] draw iteration vs objective function - support
 - [x] deal with z (not used anywhere though)
 - [ ] add readme
+- [ ] add argparser code
 
 
 ### things to do in report:
